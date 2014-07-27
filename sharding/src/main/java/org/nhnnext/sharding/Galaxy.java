@@ -26,6 +26,9 @@ public class Galaxy {
 	}
 	
 	public void addUser(){
+		// procedure
+		// uid, gid, dbid
+		
 		userList.add(new User(pos));
 	}
 	

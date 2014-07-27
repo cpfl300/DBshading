@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class User {
+	private int userId;
 	private int galaxyPos;
 	private List<Ship> shipList;
 	
