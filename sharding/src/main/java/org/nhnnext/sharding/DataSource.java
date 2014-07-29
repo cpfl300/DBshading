@@ -7,9 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 
-// THIS IS SINGLETON PATTERN
 public class DataSource {
-//	private static DataSource dataSource;
 	static final String USERNAME = "sharding";
 	static final String USERPW = "";
 	static final String DB_URL_PRE = "jdbc:mysql://";
@@ -20,9 +18,6 @@ public class DataSource {
 	private static Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
 	private BasicDataSource bds;
 	
-	// CALLED BY DatabaseContextListener
-
-	// THIS CONSTRUCTOR RUNS ONLY ONCE
 	private DataSource(String ip, String dbname) {
 		bds = new BasicDataSource();
 		bds.setDriverClassName(DataSource.DB_DRIVER);
@@ -34,6 +29,7 @@ public class DataSource {
 		bds.setMaxIdle(6);
 		bds.setMaxOpenPreparedStatements(180);
 	}
+	
 	public static void addDB(String ip, String dbname) {
 		DataSource.dataSourceMap.put(ip, new DataSource(ip, dbname));
 	}
@@ -48,9 +44,10 @@ public class DataSource {
 		Connection conn = null;
 		try {
 			conn = this.bds.getConnection();
+			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
 		}
 		
 		return conn;
