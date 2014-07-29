@@ -9,8 +9,6 @@ import java.util.List;
 
 public class Galaxy {
 	
-	public static final int HP = 100000;
-	
 	private int pos;
 	private List<User> userList; 
 	
@@ -32,7 +30,7 @@ public class Galaxy {
 			psmt = yodaConn.prepareStatement(sql);
 			psmt.setInt(1, this.pos);
 			psmt.setString(2, "galaxy" + this.pos);
-			psmt.setInt(3, Galaxy.HP);
+			psmt.setInt(3, MainClass.GALAXY_HP);
 			psmt.execute();
 			
 		} catch (SQLException e) {

@@ -4,6 +4,7 @@ package org.nhnnext.sharding;
 public class MainClass {
 	
 	static final int GALAXY_NUM = 4;
+	public static final int GALAXY_HP = 100000;
 
 	static final String GLO_DB_IP = "10.73.45.134";
 	static final String YO_DB_IP1 = "10.73.45.72";
@@ -22,7 +23,5 @@ public class MainClass {
 		season.signUp(100000);
 		
 	}
-
-
 	
 }

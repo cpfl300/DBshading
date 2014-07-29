@@ -132,7 +132,7 @@ public class Season {
 				Connection yodaConn = DataSource.getInstance(Season.ipMap.get(key)).getConnection();
 				PreparedStatement psmt = null;
 				ResultSet rs = null;
-				String sql = "select GID, HP from galaxy where not HP = "+ Galaxy.HP;
+				String sql = "select GID, HP from galaxy where not HP = "+ MainClass.GALAXY_HP;
 
 				try {
 					psmt = yodaConn.prepareStatement(sql);
