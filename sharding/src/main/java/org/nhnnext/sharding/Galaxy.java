@@ -22,7 +22,7 @@ public class Galaxy {
 	}
 	
 	private void saveAtDb(String ip) {
-		Connection yodaConn = DataSource.getInstance(ip).getConnection();
+		Connection yodaConn = Season.connMap.get(ip);
 		PreparedStatement psmt = null;
 		String sql = "insert into galaxy values(?, ?, ?)";
 		
@@ -38,7 +38,6 @@ public class Galaxy {
 			
 		} finally {
 			Utility.psmtClose(psmt);
-			Utility.connClose(yodaConn);
 			
 		}
 		
@@ -46,7 +45,7 @@ public class Galaxy {
 
 	public void addUser(int userId, int galaxyId, String dbIp){
 		//1. db에 저장한다
-		Connection yodaConn = DataSource.getInstance(dbIp).getConnection();
+		Connection yodaConn = Season.connMap.get(dbIp);
 
 		PreparedStatement psmt = null;
 		String yodaQuery = "insert into user values (?, ?)";
@@ -65,14 +64,20 @@ public class Galaxy {
 			
 		} finally {
 			Utility.psmtClose(psmt);
-			Utility.connClose(yodaConn);
 			
 		}
 		
 	}
 
 	public void start() {
-		System.out.println("user size: " + this.userList.size());
+		try {
+			Thread.sleep(3000);
+			
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			
+		}
+		
 		for (int i=0; i<this.userList.size(); ++i) {
 			User curUser = this.userList.get(i);
 			curUser.attack();

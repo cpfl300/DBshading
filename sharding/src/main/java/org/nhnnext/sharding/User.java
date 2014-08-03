@@ -2,7 +2,6 @@ package org.nhnnext.sharding;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -23,29 +22,39 @@ public class User {
 		makeAttackable();
 	}
 	
-
 	public void attack() {
-		while (Season.startFlag) {
-			int targetId = pickOne();
-			String targetIp = Season.ipMap.get(targetId+1);
-			Connection yodaConn = DataSource.getInstance(targetIp).getConnection();
-			PreparedStatement psmt = null;
-			String sql = "update galaxy set HP = HP - ? WHERE gid = ?";
+		Connection userConn = Season.connMap.get(this.dbIp);
+		CallableStatement cs = null;
+		
+		String query = "{CALL attack(?, ?, ?, ?)}";
+
+		try {
+			//glodb에 insert
+			while (Season.startFlag) {			
+				int galaxyHP = 0;
+				int galaxyId = pickOne() + 1;
 			
-			try {
-				psmt = yodaConn.prepareStatement(sql);
-				psmt.setInt(1, this.power);
-				psmt.setInt(2, targetId);
-				psmt.execute();
+				cs = userConn.prepareCall(query);
 				
-			} catch (SQLException e) {
-				e.printStackTrace();
+				cs.setInt(1, this.userId);
+				cs.setInt(2, this.power);
+				cs.setInt(3, galaxyId);
+				cs.registerOutParameter(4, Types.INTEGER);
+			
+				cs.execute();
+				galaxyHP = cs.getInt(4);
 				
-			} finally {
-				Utility.psmtClose(psmt);
-				Utility.connClose(yodaConn);
-				
+				if (galaxyHP <= 0) {
+					Season.shutdown();
+				}
 			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			
+		} finally{
+			Utility.csClose(cs);
+			
 		}
 	}
 	
@@ -60,17 +69,17 @@ public class User {
 	}
 	
 	private int pickOne() {
-		int one = (int)(Math.random() * MainClass.GALAXY_NUM-1);
+		int one = (int)(Math.random() * MainClass.GALAXY_NUM - 1);
 		
 		return attackable.get(one);
 	}
 	
 	private int getPower() {
-		Connection conn = DataSource.getInstance(this.dbIp).getConnection();
+		Connection conn = Season.connMap.get(this.dbIp);
 		CallableStatement cs = null;
 		int power = 0;
-	//	(IN UserID int, IN GID int, OUT POWER int)
 		String query = "{ CALL getPower(?, ?, ?) }";
+		
 		try {
 			//glodb에 insert
 			cs = conn.prepareCall(query);
@@ -89,7 +98,6 @@ public class User {
 			
 		} finally{
 			Utility.csClose(cs);
-			Utility.connClose(conn);
 			
 		}
 		return power;

@@ -17,13 +17,14 @@ public class Season {
 	public static List<Galaxy> galaxyList = new ArrayList<Galaxy>();
 	public static boolean startFlag = false;
 	public static Map<Integer, String> ipMap = new HashMap<Integer, String>();
+	public static Map<String, Connection> connMap = new HashMap<String, Connection>();
 	
 	//은하 4개가 있어야 함
 	public Season() {
 		createConn();
 		createGalaxy();
 	}
-	
+
 	public void start() {
 		Season.startFlag = true;
 		Thread thread = null;
@@ -61,64 +62,65 @@ public class Season {
 
 	}
 	
-	public void shutdown() {
+	public synchronized static void shutdown() {
 		Season.startFlag = false;
+		
+		Utility.connClose(Season.connMap.get(MainClass.YO_DB_IP1));
+		Utility.connClose(Season.connMap.get(MainClass.YO_DB_IP2));
+		Utility.connClose(Season.connMap.get(MainClass.GLO_DB_IP));
 	}
 	
 
 //	random은하에 addUser를 호출하는 메서드 필요(스레드 1개)
 	public void signUp(final int count) {
 		Thread thread = null;
-//		for (int i=0; i<count; ++i) {
 		Runnable runnable = new Runnable() {
 
 			public void run() {
+				Connection conn = Season.connMap.get(MainClass.GLO_DB_IP);
 				
-//				for (int i=0; i<count; ++i) {
-					Connection conn = DataSource.getInstance(MainClass.GLO_DB_IP).getConnection();
-					CallableStatement cs = null;
+				CallableStatement cs = null;
+				
+				String query = "{CALL adduser(?, ?, ?)}";
+				int userId = 0;
+				int galaxyId = 0;
+
+				try {
+					//glodb에 insert
+					cs = conn.prepareCall(query);
+					cs.registerOutParameter(1, Types.INTEGER);
+					cs.registerOutParameter(2, Types.INTEGER);
+					cs.registerOutParameter(3, Types.TINYINT);
 					
-					String query = "{CALL adduser(?, ?, ?)}";
-					String ip = null;
-					int userId = 0;
-					int galaxyId = 0;
-	
-					try {
-						//glodb에 insert
-						cs = conn.prepareCall(query);
-						cs.registerOutParameter(1, Types.INTEGER);
-						cs.registerOutParameter(2, Types.INTEGER);
-						cs.registerOutParameter(3, Types.TINYINT);
-						
-						for (int i=0; i<count; ++i) {
-							cs.execute();
-							
-							//저장한 정보 가져오기
-							userId = cs.getInt(1);
-							int dbId = cs.getInt(2);
-							galaxyId = cs.getInt(3);
-							
-							galaxyList.get(galaxyId-1).addUser(userId, galaxyId, Season.ipMap.get(dbId));
-							if (userId % 100 == 1) {
-								System.out.println("user num: " + userId);							
-							}
+					for (int i=0; i<count; ++i) {
+						if (!Season.startFlag) {
+							break;
 						}
+						cs.execute();
 						
-					} catch (SQLException e) {
-						e.printStackTrace();
+						//저장한 정보 가져오기
+						userId = cs.getInt(1);
+						int dbId = cs.getInt(2);
+						galaxyId = cs.getInt(3);
 						
-					} finally{
-						Utility.csClose(cs);
-						Utility.connClose(conn);
+						String dbIp = Season.ipMap.get(dbId);
 						
+						galaxyList.get(galaxyId-1).addUser(userId, galaxyId, dbIp);
+						System.out.println("user num: " + userId);							
 					}
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+					
+				} finally{
+					Utility.csClose(cs);
+					
 				}
-//			}
+			}
 		};
 		
 		thread = new Thread(runnable);
 		thread.start();	
-//		}
 		
 	}
 
@@ -126,8 +128,7 @@ public class Season {
 		try {
 			Thread.sleep(1000);
 			
-			for (int i = 1; i < 5; i++) {
-				final int key = i;
+			for (int key = 1; key < 5; key++) {
 
 				Connection yodaConn = DataSource.getInstance(Season.ipMap.get(key)).getConnection();
 				PreparedStatement psmt = null;
@@ -168,7 +169,14 @@ public class Season {
 		Season.ipMap.put(2, MainClass.YO_DB_IP2);
 		Season.ipMap.put(3, MainClass.YO_DB_IP1);
 		Season.ipMap.put(4, MainClass.YO_DB_IP2);
+		
+		
+		connMap.put(MainClass.GLO_DB_IP, DataSource.getInstance(MainClass.GLO_DB_IP).getConnection());
+		connMap.put(MainClass.YO_DB_IP1, DataSource.getInstance(MainClass.YO_DB_IP1).getConnection());
+		connMap.put(MainClass.YO_DB_IP2, DataSource.getInstance(MainClass.YO_DB_IP2).getConnection());
+		
 	}
+	
 
 	private void createGalaxy() {
 		

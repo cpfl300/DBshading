@@ -4,7 +4,7 @@ package org.nhnnext.sharding;
 public class MainClass {
 	
 	static final int GALAXY_NUM = 4;
-	public static final int GALAXY_HP = 100000;
+	public static final int GALAXY_HP = 1000000;
 
 	static final String GLO_DB_IP = "10.73.45.134";
 	static final String YO_DB_IP1 = "10.73.45.72";
@@ -18,7 +18,6 @@ public class MainClass {
 		//초기세팅
 		Season season = new Season();
 		
-//		season.signUp(100000);
 		season.start();
 		season.signUp(100000);
 		
