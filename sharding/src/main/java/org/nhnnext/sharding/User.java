@@ -21,7 +21,7 @@ public class User {
 		this.power = getPower();
 		makeAttackable();
 	}
-	
+
 	public void attack() {
 		Connection userConn = Season.connMap.get(this.dbIp);
 		CallableStatement cs = null;

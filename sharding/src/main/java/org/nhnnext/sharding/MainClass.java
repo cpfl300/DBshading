@@ -1,6 +1,7 @@
 package org.nhnnext.sharding;
 
 
+
 public class MainClass {
 	
 	static final int GALAXY_NUM = 4;
@@ -16,6 +17,16 @@ public class MainClass {
 	public static void main(String[] args) {
 		
 		//초기세팅
+//		try {
+//			Thread serverThread = new Server(9090);
+//			serverThread.start();
+//			
+//			
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			
+//		}
+		
 		Season season = new Season();
 		
 		season.start();
